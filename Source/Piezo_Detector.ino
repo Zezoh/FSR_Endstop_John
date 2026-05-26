@@ -51,10 +51,10 @@
 //   1       0          1.05
 //   1       1          1.08
 // Values are listed by jumper-state table order above (not by numeric magnitude).
-const float THRESHOLD_SEN1_LOW_SEN2_LOW   = 1.20;
-const float THRESHOLD_SEN1_LOW_SEN2_HIGH  = 1.15;
-const float THRESHOLD_SEN1_HIGH_SEN2_LOW  = 1.05;
-const float THRESHOLD_SEN1_HIGH_SEN2_HIGH = 1.08;
+const float THRESHOLD_SEN1_INSTALLED_SEN2_INSTALLED = 1.20;
+const float THRESHOLD_SEN1_INSTALLED_SEN2_OPEN      = 1.15;
+const float THRESHOLD_SEN1_OPEN_SEN2_INSTALLED      = 1.05;
+const float THRESHOLD_SEN1_OPEN_SEN2_OPEN           = 1.08;
 
 uint8_t piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
 uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
@@ -227,17 +227,17 @@ inline float GetThreshold()
 
     if (sen1PinState == LOW)
     {
-        return (sen2PinState == LOW) ? THRESHOLD_SEN1_LOW_SEN2_LOW : THRESHOLD_SEN1_LOW_SEN2_HIGH;
+        return (sen2PinState == LOW) ? THRESHOLD_SEN1_INSTALLED_SEN2_INSTALLED : THRESHOLD_SEN1_INSTALLED_SEN2_OPEN;
     }
 
-    return (sen2PinState == LOW) ? THRESHOLD_SEN1_HIGH_SEN2_LOW : THRESHOLD_SEN1_HIGH_SEN2_HIGH;
+    return (sen2PinState == LOW) ? THRESHOLD_SEN1_OPEN_SEN2_INSTALLED : THRESHOLD_SEN1_OPEN_SEN2_OPEN;
 }
 
 //
 // This method is called after every sample to see if the output trigger status should be changed.
 // It will also update the short sample buffer, and it may update the long-term samples.
 //
-void CheckIfTriggered(uint8_t piezo)
+void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
 {
     //
     // Calculate the average of the most recent short-term samples
@@ -250,7 +250,7 @@ void CheckIfTriggered(uint8_t piezo)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    uint32_t thresholdCandidate = (uint32_t)(GetThreshold() * baseline);
+    uint32_t thresholdCandidate = (uint32_t)(thresholdMultiplier * baseline);
     if (thresholdCandidate > ADC_MAX_VALUE)
     {
         thresholdCandidate = ADC_MAX_VALUE;
@@ -263,6 +263,8 @@ void CheckIfTriggered(uint8_t piezo)
 
 void loop()
 {
+    float thresholdMultiplier = GetThreshold();
+
     for (uint8_t piezo = 0; piezo < 3; piezo++)
     {
         uint16_t value = analogRead(piezoPins[piezo]);
@@ -272,6 +274,6 @@ void loop()
         {
             averageIndex[piezo] = 0;
         }
-        CheckIfTriggered(piezo);
+        CheckIfTriggered(piezo, thresholdMultiplier);
     }
 }
