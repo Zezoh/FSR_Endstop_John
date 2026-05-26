@@ -55,8 +55,8 @@ const float THRESHOLD_SEN1_0_SEN2_1 = 1.15;
 const float THRESHOLD_SEN1_1_SEN2_0 = 1.05;
 const float THRESHOLD_SEN1_1_SEN2_1 = 1.08;
 
-short piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
-short piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
+uint8_t piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
+uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
 
 #define SHORT_SIZE 8
 #define LONG_SIZE 16
@@ -73,7 +73,7 @@ uint8_t averageIndex[3] = {0, 0, 0};
 //
 // Set the triggered state based on the state of one piezo sensor
 //
-void SetOutput(short piezo, bool state)
+void SetOutput(uint8_t piezo, bool state)
 {
     static bool triggered[3] = {false};     // Keeps track of current sensor trigger state, initially not triggered
 
@@ -181,7 +181,7 @@ void setup()
 // Captures a new value once LONG_INTERVAL ms have passed since the last sample.
 //
 // Returns: The current long-range average
-uint16_t UpdateLongSamples(short piezo, int avg)
+uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 {
     //
     // If enough time hasn't passed, just return the last value
@@ -233,7 +233,7 @@ inline float GetThreshold()
 // This method is called after every sample to see if the output trigger status should be changed.
 // It will also update the short sample buffer, and it may update the long-term samples.
 //
-void CheckIfTriggered(short piezo)
+void CheckIfTriggered(uint8_t piezo)
 {
     //
     // Calculate the average of the most recent short-term samples
