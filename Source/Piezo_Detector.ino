@@ -190,7 +190,11 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     // If enough time hasn't passed, just return the last value
     //
     unsigned long current = millis();
-    if (current - lastLongSampleTime[piezo] <= LONG_INTERVAL)
+    unsigned long lastSample = lastLongSampleTime[piezo];
+    unsigned long elapsed = (current >= lastSample)
+        ? (current - lastSample)
+        : ((0xFFFFFFFFUL - lastSample) + current + 1);
+    if (elapsed <= LONG_INTERVAL)
     {
         return longAverage[piezo];
     }
@@ -212,7 +216,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 
     longAverage[piezo] = total / LONG_SIZE;
 
-    lastLongSampleTime[piezo] += LONG_INTERVAL;
+    lastLongSampleTime[piezo] = current;
     return longAverage[piezo];
 }
 
@@ -251,12 +255,8 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    float thresholdCandidate = thresholdMultiplier * baseline;
-    if (thresholdCandidate > ADC_MAX_VALUE)
-    {
-        thresholdCandidate = ADC_MAX_VALUE;
-    }
-    uint16_t threshold = (uint16_t)thresholdCandidate;
+    float thresholdValue = thresholdMultiplier * baseline;
+    uint16_t threshold = (thresholdValue > ADC_MAX_VALUE) ? ADC_MAX_VALUE : (uint16_t)thresholdValue;
 
     bool triggered = avg > threshold;
     SetOutput(piezo, triggered);
