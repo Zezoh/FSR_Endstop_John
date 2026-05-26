@@ -1,4 +1,4 @@
-// Pin layout copied from pins.arduino.h for convience, and then added how the pins are
+// Pin layout copied from pins.arduino.h for convenience, and then added how the pins are
 // connected on the circuit board.
 //
 // ATMEL ATTINY861
@@ -41,7 +41,6 @@
 #define SEN2        4
 
 // The end stop output
-#define TRIGGER     03
 #define TRIGGERED   LOW
 #define UNTRIGGERED HIGH
 
@@ -81,9 +80,9 @@ void SetOutput(short piezo, bool state)
 
     // See if any of the sensors are currently triggered
     bool any = false;
-    for (uint8_t piezo = 0; piezo < 3; piezo++)
+    for (uint8_t i = 0; i < 3; i++)
     {
-        any |= triggered[piezo];
+        any |= triggered[i];
     }
 
     digitalWrite(LEDTRIGGER, any ? LOW : HIGH);
@@ -99,7 +98,7 @@ void SetOutput(short piezo, bool state)
     else
     {
         // Jumper installed, so use Normally Open
-        digitalWrite(ENDSTOP, any ? HIGH: LOW);
+        digitalWrite(ENDSTOP, any ? HIGH : LOW);
     }
 }
 
