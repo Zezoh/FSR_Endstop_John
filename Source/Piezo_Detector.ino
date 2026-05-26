@@ -63,7 +63,7 @@ uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog 
 #define SHORT_SIZE 8               // Number of immediate samples used for trigger averaging
 #define LONG_SIZE 16               // Number of averaged points used for moving baseline
 #define BASELINE_WINDOW_MS 2000
-#define LONG_INTERVAL (BASELINE_WINDOW_MS / LONG_SIZE) // Sample interval for a ~2 second baseline window
+#define LONG_INTERVAL (BASELINE_WINDOW_MS / LONG_SIZE) // Interval between long samples; LONG_SIZE intervals span ~2 seconds
 #define VERSION_BLINK_DURATION_MS 250
 #define ADC_MAX_VALUE 1023
 #define MIN_BASELINE 1
@@ -196,7 +196,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     unsigned long lastSample = lastLongSampleTime[piezo];
     // Unsigned subtraction is intentionally wrap-safe across millis() rollover.
     unsigned long elapsed = current - lastSample;
-    if (elapsed <= LONG_INTERVAL)
+    if (elapsed < LONG_INTERVAL)
     {
         return longAverage[piezo];
     }
@@ -257,10 +257,7 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    if (baseline == 0)
-    {
-        baseline = MIN_BASELINE;
-    }
+    baseline = (baseline < MIN_BASELINE) ? MIN_BASELINE : baseline;
 
     float thresholdValue = thresholdMultiplier * baseline;
     uint16_t threshold = (thresholdValue > ADC_MAX_VALUE) ? ADC_MAX_VALUE : (uint16_t)thresholdValue;
