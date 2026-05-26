@@ -50,6 +50,7 @@
 //   0       1          1.15
 //   1       0          1.05
 //   1       1          1.08
+// Sensitivity multipliers for jumper combinations from least to most sensitive.
 const float thresholds[] = { 1.20, 1.15, 1.05, 1.08 };
 
 short piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
@@ -218,7 +219,7 @@ inline float GetThreshold()
     int sen1 = digitalRead(SEN1);
     int sen2 = digitalRead(SEN2);
 
-    int index = sen1 << 1 | sen2;
+    int index = (sen1 << 1) | sen2; // Convert SEN1/SEN2 states into threshold index 0..3
     return thresholds[index];
 }
 
@@ -239,7 +240,7 @@ void CheckIfTriggered(short piezo)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    uint16_t threshold = GetThreshold() * baseline;
+    uint16_t threshold = (uint16_t)(GetThreshold() * baseline);
 
     bool triggered = avg > threshold;
     SetOutput(piezo, triggered);
