@@ -50,8 +50,10 @@
 //   0       1          1.15
 //   1       0          1.05
 //   1       1          1.08
-// Sensitivity multipliers for jumper combinations in the table order above.
-const float thresholds[] = { 1.20, 1.15, 1.05, 1.08 };
+const float THRESHOLD_SEN1_0_SEN2_0 = 1.20;
+const float THRESHOLD_SEN1_0_SEN2_1 = 1.15;
+const float THRESHOLD_SEN1_1_SEN2_0 = 1.05;
+const float THRESHOLD_SEN1_1_SEN2_1 = 1.08;
 
 short piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
 short piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
@@ -219,8 +221,12 @@ inline float GetThreshold()
     int sen1 = digitalRead(SEN1);
     int sen2 = digitalRead(SEN2);
 
-    int index = (sen1 << 1) | sen2; // Convert SEN1/SEN2 states into threshold index 0..3
-    return thresholds[index];
+    if (sen1 == 0)
+    {
+        return (sen2 == 0) ? THRESHOLD_SEN1_0_SEN2_0 : THRESHOLD_SEN1_0_SEN2_1;
+    }
+
+    return (sen2 == 0) ? THRESHOLD_SEN1_1_SEN2_0 : THRESHOLD_SEN1_1_SEN2_1;
 }
 
 //
