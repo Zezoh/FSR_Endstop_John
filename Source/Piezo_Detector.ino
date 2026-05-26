@@ -209,7 +209,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 
     longAverage[piezo] = total / LONG_SIZE;
 
-    lastLongTime[piezo] = millis();
+    lastLongTime[piezo] += LONG_INTERVAL;
     return longAverage[piezo];
 }
 
@@ -218,6 +218,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 //
 inline float GetThreshold()
 {
+    // Read jumpers each cycle so sensitivity can be adjusted without reflashing.
     uint8_t sen1PinState = digitalRead(SEN1);
     uint8_t sen2PinState = digitalRead(SEN2);
 
@@ -246,7 +247,12 @@ void CheckIfTriggered(uint8_t piezo)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    uint16_t threshold = (uint16_t)(GetThreshold() * baseline);
+    uint32_t thresholdCandidate = (uint32_t)(GetThreshold() * baseline);
+    if (thresholdCandidate > 1023)
+    {
+        thresholdCandidate = 1023;
+    }
+    uint16_t threshold = (uint16_t)thresholdCandidate;
 
     bool triggered = avg > threshold;
     SetOutput(piezo, triggered);
