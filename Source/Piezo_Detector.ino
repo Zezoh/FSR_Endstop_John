@@ -50,7 +50,7 @@
 //   0       1          1.15
 //   1       0          1.05
 //   1       1          1.08
-// Sensitivity multipliers for jumper combinations from least to most sensitive.
+// Sensitivity multipliers for jumper combinations in the table order above.
 const float thresholds[] = { 1.20, 1.15, 1.05, 1.08 };
 
 short piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
@@ -173,7 +173,7 @@ void setup()
     InitializeJumpers();
 
     BlinkVersion(VERSION);
-};
+}
 
 //
 // Captures a new value once LONG_INTERVAL ms have passed since the last sample.
@@ -259,4 +259,4 @@ void loop()
         }
         CheckIfTriggered(piezo);
     }
-};
+}
