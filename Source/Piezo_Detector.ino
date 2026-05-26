@@ -92,8 +92,8 @@ void SetOutput(uint8_t piezo, bool state)
 
     // For the end stop, we need to check the NC jumper to see if we need to invert
     // the output.
-    int ncPinState = digitalRead(NC_PIN);
-    if (ncPinState == 1)
+    uint8_t ncPinState = digitalRead(NC_PIN);
+    if (ncPinState == HIGH)
     {
         // No jumper installed, so use Normally Closed
         digitalWrite(ENDSTOP, any ? LOW : HIGH);
@@ -218,15 +218,15 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 //
 inline float GetThreshold()
 {
-    int sen1State = digitalRead(SEN1);
-    int sen2State = digitalRead(SEN2);
+    uint8_t sen1PinState = digitalRead(SEN1);
+    uint8_t sen2PinState = digitalRead(SEN2);
 
-    if (sen1State == 0)
+    if (sen1PinState == LOW)
     {
-        return (sen2State == 0) ? THRESHOLD_SEN1_0_SEN2_0 : THRESHOLD_SEN1_0_SEN2_1;
+        return (sen2PinState == LOW) ? THRESHOLD_SEN1_0_SEN2_0 : THRESHOLD_SEN1_0_SEN2_1;
     }
 
-    return (sen2State == 0) ? THRESHOLD_SEN1_1_SEN2_0 : THRESHOLD_SEN1_1_SEN2_1;
+    return (sen2PinState == LOW) ? THRESHOLD_SEN1_1_SEN2_0 : THRESHOLD_SEN1_1_SEN2_1;
 }
 
 //
