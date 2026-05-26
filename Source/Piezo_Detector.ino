@@ -194,7 +194,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     unsigned long lastSample = lastLongSampleTime[piezo];
     // Unsigned subtraction is intentionally wrap-safe across millis() rollover.
     unsigned long elapsed = current - lastSample;
-    if (elapsed <= LONG_INTERVAL)
+    if (elapsed < LONG_INTERVAL)
     {
         return longAverage[piezo];
     }
@@ -257,7 +257,7 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t baseline = UpdateLongSamples(piezo, avg);
     if (baseline == 0)
     {
-        baseline = (avg > 0) ? avg : MIN_BASELINE;
+        baseline = MIN_BASELINE;
     }
 
     float thresholdValue = thresholdMultiplier * baseline;
