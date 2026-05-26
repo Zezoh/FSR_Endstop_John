@@ -50,6 +50,7 @@
 //   0       1          1.15
 //   1       0          1.05
 //   1       1          1.08
+// 0 = LOW (jumper installed), 1 = HIGH (jumper open) with INPUT_PULLUP.
 // Values are listed by jumper-state table order above (not by numeric magnitude).
 const float THRESHOLD_BOTH_INSTALLED  = 1.20;
 const float THRESHOLD_SEN1_ONLY       = 1.15;
@@ -64,7 +65,7 @@ uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog 
 #define LONG_INTERVAL (2000 / LONG_SIZE)
 #define ADC_MAX_VALUE 1023
 
-unsigned long lastLongTime[3];              // Last time in millis that we captured a long-term sample
+unsigned long lastLongSampleTime[3];        // Last time in millis that we captured a long-term sample
 uint16_t longSamples[3][LONG_SIZE];         // Used to keep a long-term average
 uint8_t longIndex[3] = {0, 0, 0};           // Index of the last long-term sample
 uint16_t longAverage[3] = {0, 0, 0};
@@ -119,7 +120,7 @@ void InitValues()
     }
 
     for (uint8_t piezo = 0; piezo < 3; piezo++)
-        lastLongTime[piezo] = millis();
+        lastLongSampleTime[piezo] = millis();
 }
 
 void InitializeJumpers()
@@ -189,7 +190,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     // If enough time hasn't passed, just return the last value
     //
     unsigned long current = millis();
-    if (current - lastLongTime[piezo] <= LONG_INTERVAL)
+    if (current - lastLongSampleTime[piezo] <= LONG_INTERVAL)
     {
         return longAverage[piezo];
     }
@@ -203,7 +204,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
         longIndex[piezo] = 0;
     }
 
-    uint16_t total = 0;
+    uint32_t total = 0;
     for (uint8_t i = 0; i < LONG_SIZE; i++)
     {
         total += longSamples[piezo][i];
@@ -211,7 +212,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 
     longAverage[piezo] = total / LONG_SIZE;
 
-    lastLongTime[piezo] += LONG_INTERVAL;
+    lastLongSampleTime[piezo] += LONG_INTERVAL;
     return longAverage[piezo];
 }
 
@@ -242,7 +243,7 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     //
     // Calculate the average of the most recent short-term samples
     //
-    uint16_t total = 0;
+    uint32_t total = 0;
     for (uint8_t i = 0; i < SHORT_SIZE; i++)
     {
         total += shortSamples[piezo][i];
