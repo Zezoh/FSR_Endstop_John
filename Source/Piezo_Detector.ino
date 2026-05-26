@@ -204,7 +204,8 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     //
     // Update the long sample with the new value, and then update the long average
     //
-    longSamples[piezo][longIndex[piezo]++] = avg;
+    longSamples[piezo][longIndex[piezo]] = avg;
+    longIndex[piezo]++;
     if (longIndex[piezo] >= LONG_SIZE)
     {
         longIndex[piezo] = 0;
@@ -257,10 +258,10 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
-    baseline = (baseline < MIN_BASELINE) ? MIN_BASELINE : baseline;
+    baseline = max(baseline, (uint16_t)MIN_BASELINE);
 
     float thresholdValue = thresholdMultiplier * baseline;
-    uint16_t threshold = (thresholdValue > ADC_MAX_VALUE) ? ADC_MAX_VALUE : (uint16_t)thresholdValue;
+    uint16_t threshold = min((uint16_t)thresholdValue, (uint16_t)ADC_MAX_VALUE);
 
     bool triggered = avg > threshold;
     SetOutput(piezo, triggered);
@@ -274,7 +275,8 @@ void loop()
     {
         uint16_t value = analogRead(piezoPins[piezo]);
 
-        shortSamples[piezo][averageIndex[piezo]++] = value;
+        shortSamples[piezo][averageIndex[piezo]] = value;
+        averageIndex[piezo]++;
         if (averageIndex[piezo] >= SHORT_SIZE)
         {
             averageIndex[piezo] = 0;
