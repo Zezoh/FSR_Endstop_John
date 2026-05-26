@@ -202,7 +202,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     }
 
     uint16_t total = 0;
-    for (int i = 0; i < LONG_SIZE; i++)
+    for (uint8_t i = 0; i < LONG_SIZE; i++)
     {
         total += longSamples[piezo][i];
     }
@@ -239,7 +239,7 @@ void CheckIfTriggered(uint8_t piezo)
     // Calculate the average of the most recent short-term samples
     //
     uint16_t total = 0;
-    for (int i = 0; i < SHORT_SIZE; i++)
+    for (uint8_t i = 0; i < SHORT_SIZE; i++)
     {
         total += shortSamples[piezo][i];
     }
@@ -256,7 +256,7 @@ void loop()
 {
     for (uint8_t piezo = 0; piezo < 3; piezo++)
     {
-        int value = analogRead(piezoPins[piezo]);
+        uint16_t value = analogRead(piezoPins[piezo]);
 
         shortSamples[piezo][averageIndex[piezo]++] = value;
         if (averageIndex[piezo] >= SHORT_SIZE)
