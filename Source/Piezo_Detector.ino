@@ -62,7 +62,9 @@ uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog 
 
 #define SHORT_SIZE 8               // Number of immediate samples used for trigger averaging
 #define LONG_SIZE 16               // Number of averaged points used for moving baseline
-#define LONG_INTERVAL (2000 / LONG_SIZE) // Sample interval for a ~2 second baseline window
+#define BASELINE_WINDOW_MS 2000
+#define LONG_INTERVAL (BASELINE_WINDOW_MS / LONG_SIZE) // Sample interval for a ~2 second baseline window
+#define VERSION_BLINK_DURATION_MS 250
 #define ADC_MAX_VALUE 1023
 #define MIN_BASELINE 1
 
@@ -141,7 +143,7 @@ void BlinkVersion(uint8_t version)
     {
         digitalWrite(piezoLeds[i], (version & (1 << i)) ? HIGH : LOW);
     }
-    delay(250);
+    delay(VERSION_BLINK_DURATION_MS);
     for (uint8_t i = 0; i < 3; i++)
     {
         digitalWrite(piezoLeds[i], LOW);
@@ -194,7 +196,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     unsigned long lastSample = lastLongSampleTime[piezo];
     // Unsigned subtraction is intentionally wrap-safe across millis() rollover.
     unsigned long elapsed = current - lastSample;
-    if (elapsed < LONG_INTERVAL)
+    if (elapsed <= LONG_INTERVAL)
     {
         return longAverage[piezo];
     }
