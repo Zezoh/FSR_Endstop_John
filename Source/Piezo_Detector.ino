@@ -51,10 +51,10 @@
 //   1       0          1.05
 //   1       1          1.08
 // Values are listed by jumper-state table order above (not by numeric magnitude).
-const float THRESHOLD_SEN1_ON_SEN2_ON   = 1.20;
-const float THRESHOLD_SEN1_ON_SEN2_OFF  = 1.15;
-const float THRESHOLD_SEN1_OFF_SEN2_ON  = 1.05;
-const float THRESHOLD_SEN1_OFF_SEN2_OFF = 1.08;
+const float THRESHOLD_SEN1_LOW_SEN2_LOW   = 1.20;
+const float THRESHOLD_SEN1_LOW_SEN2_HIGH  = 1.15;
+const float THRESHOLD_SEN1_HIGH_SEN2_LOW  = 1.05;
+const float THRESHOLD_SEN1_HIGH_SEN2_HIGH = 1.08;
 
 uint8_t piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
 uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
@@ -62,6 +62,7 @@ uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog 
 #define SHORT_SIZE 8
 #define LONG_SIZE 16
 #define LONG_INTERVAL (2000 / LONG_SIZE)
+#define ADC_MAX_VALUE 1023
 
 unsigned long lastLongTime[3];              // Last time in millis that we captured a long-term sample
 uint16_t longSamples[3][LONG_SIZE];         // Used to keep a long-term average
@@ -226,10 +227,10 @@ inline float GetThreshold()
 
     if (sen1PinState == LOW)
     {
-        return (sen2PinState == LOW) ? THRESHOLD_SEN1_ON_SEN2_ON : THRESHOLD_SEN1_ON_SEN2_OFF;
+        return (sen2PinState == LOW) ? THRESHOLD_SEN1_LOW_SEN2_LOW : THRESHOLD_SEN1_LOW_SEN2_HIGH;
     }
 
-    return (sen2PinState == LOW) ? THRESHOLD_SEN1_OFF_SEN2_ON : THRESHOLD_SEN1_OFF_SEN2_OFF;
+    return (sen2PinState == LOW) ? THRESHOLD_SEN1_HIGH_SEN2_LOW : THRESHOLD_SEN1_HIGH_SEN2_HIGH;
 }
 
 //
@@ -250,9 +251,9 @@ void CheckIfTriggered(uint8_t piezo)
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
     uint32_t thresholdCandidate = (uint32_t)(GetThreshold() * baseline);
-    if (thresholdCandidate > 1023)
+    if (thresholdCandidate > ADC_MAX_VALUE)
     {
-        thresholdCandidate = 1023;
+        thresholdCandidate = ADC_MAX_VALUE;
     }
     uint16_t threshold = (uint16_t)thresholdCandidate;
 
