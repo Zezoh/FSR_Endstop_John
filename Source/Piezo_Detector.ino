@@ -255,6 +255,11 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t avg = total / SHORT_SIZE;
 
     uint16_t baseline = UpdateLongSamples(piezo, avg);
+    if (baseline == 0)
+    {
+        baseline = avg;
+    }
+
     float thresholdValue = thresholdMultiplier * baseline;
     uint16_t threshold = (thresholdValue > ADC_MAX_VALUE) ? ADC_MAX_VALUE : (uint16_t)thresholdValue;
 
