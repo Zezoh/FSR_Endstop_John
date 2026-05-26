@@ -60,9 +60,9 @@ const float THRESHOLD_BOTH_OPEN       = 1.08;
 uint8_t piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
 uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
 
-#define SHORT_SIZE 8
-#define LONG_SIZE 16
-#define LONG_INTERVAL (2000 / LONG_SIZE)
+#define SHORT_SIZE 8               // Number of immediate samples used for trigger averaging
+#define LONG_SIZE 16               // Number of averaged points used for moving baseline
+#define LONG_INTERVAL (2000 / LONG_SIZE) // Baseline window spans ~2 seconds
 #define ADC_MAX_VALUE 1023
 
 unsigned long lastLongSampleTime[3];        // Last time in millis that we captured a long-term sample
@@ -191,9 +191,7 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
     //
     unsigned long current = millis();
     unsigned long lastSample = lastLongSampleTime[piezo];
-    unsigned long elapsed = (current >= lastSample)
-        ? (current - lastSample)
-        : ((0xFFFFFFFFUL - lastSample) + current + 1);
+    unsigned long elapsed = current - lastSample;
     if (elapsed <= LONG_INTERVAL)
     {
         return longAverage[piezo];
@@ -257,7 +255,7 @@ void CheckIfTriggered(uint8_t piezo, float thresholdMultiplier)
     uint16_t baseline = UpdateLongSamples(piezo, avg);
     if (baseline == 0)
     {
-        baseline = avg;
+        baseline = (avg > 0) ? avg : 1;
     }
 
     float thresholdValue = thresholdMultiplier * baseline;
