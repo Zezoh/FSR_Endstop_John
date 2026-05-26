@@ -50,10 +50,11 @@
 //   0       1          1.15
 //   1       0          1.05
 //   1       1          1.08
-const float THRESHOLD_SEN1_0_SEN2_0 = 1.20;
-const float THRESHOLD_SEN1_0_SEN2_1 = 1.15;
-const float THRESHOLD_SEN1_1_SEN2_0 = 1.05;
-const float THRESHOLD_SEN1_1_SEN2_1 = 1.08;
+// Values are listed by jumper-state table order above (not by numeric magnitude).
+const float THRESHOLD_SEN1_ON_SEN2_ON   = 1.20;
+const float THRESHOLD_SEN1_ON_SEN2_OFF  = 1.15;
+const float THRESHOLD_SEN1_OFF_SEN2_ON  = 1.05;
+const float THRESHOLD_SEN1_OFF_SEN2_OFF = 1.08;
 
 uint8_t piezoLeds[] = { LED1, LED2, LED3 };      // Pins for each of the LEDs next to the sensor inputs
 uint8_t piezoPins[] = { PIEZO1, PIEZO2, PIEZO3 };// Pins for each sensor analog input
@@ -218,16 +219,17 @@ uint16_t UpdateLongSamples(uint8_t piezo, uint16_t avg)
 //
 inline float GetThreshold()
 {
+    // With INPUT_PULLUP, LOW means jumper installed and HIGH means no jumper installed.
     // Read jumpers each cycle so sensitivity can be adjusted without reflashing.
     uint8_t sen1PinState = digitalRead(SEN1);
     uint8_t sen2PinState = digitalRead(SEN2);
 
     if (sen1PinState == LOW)
     {
-        return (sen2PinState == LOW) ? THRESHOLD_SEN1_0_SEN2_0 : THRESHOLD_SEN1_0_SEN2_1;
+        return (sen2PinState == LOW) ? THRESHOLD_SEN1_ON_SEN2_ON : THRESHOLD_SEN1_ON_SEN2_OFF;
     }
 
-    return (sen2PinState == LOW) ? THRESHOLD_SEN1_1_SEN2_0 : THRESHOLD_SEN1_1_SEN2_1;
+    return (sen2PinState == LOW) ? THRESHOLD_SEN1_OFF_SEN2_ON : THRESHOLD_SEN1_OFF_SEN2_OFF;
 }
 
 //
